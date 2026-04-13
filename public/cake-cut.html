@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>🎂 Blow the Candle & Cut the Cake 🎂</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+    }
+    body {
+      min-height: 100vh;
+      background: linear-gradient(145deg, #2b1a2e, #1a0f1f);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Segoe UI', 'Poppins', sans-serif;
+      overflow: hidden;
+    }
+    .container {
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(8px);
+      border-radius: 60px;
+      padding: 20px 30px 30px;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    }
+    canvas {
+      display: block;
+      margin: 20px auto;
+      border-radius: 50%;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      cursor: crosshair;
+      background: #fde6c0;
+    }
+    h2 {
+      font-family: 'Dancing Script', cursive;
+      color: #ffd966;
+      text-shadow: 0 2px 8px #b3470c;
+    }
+    .info {
+      color: #fff0cc;
+      margin: 10px 0;
+      font-size: 1rem;
+    }
+    button {
+      background: #ff66aa;
+      border: none;
+      padding: 8px 20px;
+      font-size: 1rem;
+      font-weight: bold;
+      color: white;
+      border-radius: 40px;
+      cursor: pointer;
+      margin: 5px;
+      transition: 0.2s;
+    }
+    button:hover {
+      transform: scale(1.02);
+      background: #ff4488;
+    }
+    .reset-btn {
+      background: #3366cc;
+    }
+    .close-btn {
+      background: #555;
+    }
+    footer {
+      margin-top: 15px;
+      font-size: 0.8rem;
+      color: #ffdd99;
+    }
+    @keyframes sliceAnim {
+      0% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(1.5); opacity: 0; }
+    }
+    @keyframes blowAnim {
+      0% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(2); opacity: 0; }
+    }
+    .slice-feedback, .blow-feedback {
+      position: fixed;
+      pointer-events: none;
+      font-size: 2rem;
+      animation: sliceAnim 0.4s ease-out;
+      z-index: 100;
+    }
+    .blow-feedback {
+      animation: blowAnim 0.5s ease-out;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2>🎂 Blow the Candle & Cut the Cake 🎂</h2>
+  <div class="info" id="statusMsg">🕯️ Click on the candle to blow it out first! 🕯️</div>
+  <canvas id="cakeCanvas" width="500" height="500"></canvas>
+  <div>
+    <button id="resetBtn" class="reset-btn">🔄 Reset Cake & Candle</button>
+    <button id="closeBtn" class="close-btn">🔙 Close</button>
+  </div>
+  <footer>✨ After blowing out the candle, click on cake to cut slices ✨</footer>
+</div>
+
+<script>
+  (function() {
+    const canvas = document.getElementById('cakeCanvas');
+    const ctx = canvas.getContext('2d');
+    const size = 500;
+    canvas.width = size;
+    canvas.height = size;
+
+    const centerX = size/2;
+    const centerY = size/2;
+    const radius = 200;
+
+    // Cake slices data
+    let slices = [{ start: 0, end: Math.PI * 2 }];
+    
+    // Candle state
+    let candleLit = true;
+    let cuttingEnabled = false;
+    let flameFrame = 0; // for flicker animation
+    
+    const statusMsg = document.getElementById('statusMsg');
+
+    // Colors
+    const cakeBase = '#d4a373';
+    const cakeTop = '#f8c471';
+    const icing = '#f5cba0';
+    const cherry = '#e74c3c';
+
+    // Function to draw candle and flame (with flicker)
+    function drawCandleAndFlame() {
+      const candleX = centerX;
+      const candleY = centerY - radius + 35; // positioned higher (larger candle)
+      
+      // Candle body (larger: width 24, height 48)
+      ctx.fillStyle = '#fff0e0';
+      ctx.shadowBlur = 2;
+      ctx.fillRect(candleX-12, candleY-48, 24, 48);
+      // Candle ridges (optional)
+      ctx.fillStyle = '#e6d5b8';
+      for(let i=0; i<3; i++) {
+        ctx.fillRect(candleX-10, candleY-40 + i*12, 20, 2);
+      }
+      // Wick
+      ctx.beginPath();
+      ctx.moveTo(candleX, candleY-48);
+      ctx.lineTo(candleX, candleY-58);
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#444';
+      ctx.stroke();
+      
+      // Flame if lit (with flicker)
+      if (candleLit) {
+        // Flicker effect: random offset and size
+        const flickerX = (Math.random() - 0.5) * 2;
+        const flickerY = (Math.random() - 0.5) * 1.5;
+        const flameHeight = 18 + Math.random() * 5;
+        const flameWidth = 10 + Math.random() * 3;
+        ctx.beginPath();
+        ctx.moveTo(candleX + flickerX, candleY-58 + flickerY);
+        ctx.lineTo(candleX - flameWidth/2 + flickerX, candleY-58 - flameHeight + flickerY);
+        ctx.lineTo(candleX + flameWidth/2 + flickerX, candleY-58 - flameHeight + flickerY);
+        ctx.fillStyle = '#ffaa33';
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(candleX + flickerX*0.5, candleY-58 - flameHeight*0.6 + flickerY*0.5, flameWidth*0.4, 0, Math.PI*2);
+        ctx.fillStyle = '#ff6600';
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(candleX + flickerX*0.3, candleY-58 - flameHeight*0.8 + flickerY*0.3, flameWidth*0.2, 0, Math.PI*2);
+        ctx.fillStyle = '#ffffaa';
+        ctx.fill();
+      } else {
+        // small smoke
+        ctx.fillStyle = '#cccccc';
+        ctx.beginPath();
+        ctx.arc(candleX-2, candleY-60, 3, 0, Math.PI*2);
+        ctx.fill();
+      }
+    }
+
+    function drawCake() {
+      ctx.clearRect(0, 0, size, size);
+      // plate shadow
+      ctx.shadowBlur = 0;
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius+12, 0, Math.PI*2);
+      ctx.fillStyle = '#d9bf8f';
+      ctx.fill();
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = 'rgba(0,0,0,0.3)';
+
+      // Draw slices
+      for (let i = 0; i < slices.length; i++) {
+        const s = slices[i];
+        let start = s.start;
+        let end = s.end;
+        const gap = 0.02;
+        if (i > 0) start += gap/2;
+        if (i < slices.length-1) end -= gap/2;
+        
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, radius, start, end);
+        ctx.closePath();
+        ctx.fillStyle = cakeBase;
+        ctx.fill();
+        
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, radius-8, start, end);
+        ctx.closePath();
+        ctx.fillStyle = cakeTop;
+        ctx.fill();
+        
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius-4, start, end);
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = icing;
+        ctx.stroke();
+        
+        // sprinkles
+        for (let k = 0; k < 6; k++) {
+          const angle = start + Math.random() * (end - start);
+          const r = radius - 15 + Math.random() * 20;
+          const x = centerX + Math.cos(angle) * r;
+          const y = centerY + Math.sin(angle) * r;
+          ctx.beginPath();
+          ctx.arc(x, y, 2, 0, Math.PI*2);
+          ctx.fillStyle = `hsl(${Math.random()*360}, 70%, 60%)`;
+          ctx.fill();
+        }
+      }
+      
+      // Draw candle on top
+      drawCandleAndFlame();
+      
+      // Cherry
+      ctx.beginPath();
+      ctx.arc(centerX+20, centerY-18, 10, 0, Math.PI*2);
+      ctx.fillStyle = cherry;
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(centerX+18, centerY-22, 2.5, 0, Math.PI*2);
+      ctx.fillStyle = '#ff9999';
+      ctx.fill();
+      
+      ctx.shadowBlur = 0;
+    }
+
+    // Slice functions
+    function findSliceIndex(angle) {
+      let norm = angle % (Math.PI*2);
+      if (norm < 0) norm += Math.PI*2;
+      for (let i = 0; i < slices.length; i++) {
+        const s = slices[i];
+        if (norm >= s.start && norm <= s.end) return i;
+      }
+      return -1;
+    }
+
+    function cutAtAngle(angleRad) {
+      if (!cuttingEnabled) return false;
+      const idx = findSliceIndex(angleRad);
+      if (idx === -1) return false;
+      const slice = slices[idx];
+      const start = slice.start;
+      const end = slice.end;
+      if (Math.abs(angleRad - start) < 0.03 || Math.abs(angleRad - end) < 0.03) return false;
+      slices.splice(idx, 1);
+      slices.push({ start: start, end: angleRad });
+      slices.push({ start: angleRad, end: end });
+      drawCake();
+      return true;
+    }
+
+    function getAngleFromClick(e) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const mouseX = (e.clientX - rect.left) * scaleX;
+      const mouseY = (e.clientY - rect.top) * scaleY;
+      const dx = mouseX - centerX;
+      const dy = mouseY - centerY;
+      const dist = Math.hypot(dx, dy);
+      if (dist > radius + 10) return null;
+      let angle = Math.atan2(dy, dx);
+      if (angle < 0) angle += Math.PI * 2;
+      return angle;
+    }
+
+    function isClickOnCandle(e) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const mouseX = (e.clientX - rect.left) * scaleX;
+      const mouseY = (e.clientY - rect.top) * scaleY;
+      const candleX = centerX;
+      const candleY = centerY - radius + 35;
+      // Candle area (body + flame region)
+      return (mouseX > candleX-18 && mouseX < candleX+18 && mouseY > candleY-70 && mouseY < candleY);
+    }
+
+    function blowCandle(e) {
+      if (!candleLit) return false;
+      if (isClickOnCandle(e)) {
+        candleLit = false;
+        cuttingEnabled = true;
+        drawCake();
+        statusMsg.innerHTML = '🎉 Candle blown out! Now you can cut the cake! 🎉';
+        // blow feedback
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX;
+        const y = e.clientY;
+        const div = document.createElement('div');
+        div.className = 'blow-feedback';
+        div.textContent = '💨🕯️';
+        div.style.left = (x - 25) + 'px';
+        div.style.top = (y - 25) + 'px';
+        document.body.appendChild(div);
+        setTimeout(() => div.remove(), 500);
+        return true;
+      }
+      return false;
+    }
+
+    function handleCanvasClick(e) {
+      if (candleLit) {
+        if (blowCandle(e)) return;
+        else {
+          const div = document.createElement('div');
+          div.className = 'slice-feedback';
+          div.textContent = '🕯️ Blow me first!';
+          div.style.left = (e.clientX - 40) + 'px';
+          div.style.top = (e.clientY - 20) + 'px';
+          document.body.appendChild(div);
+          setTimeout(() => div.remove(), 800);
+          return;
+        }
+      }
+      const angle = getAngleFromClick(e);
+      if (angle !== null) {
+        if (cutAtAngle(angle)) {
+          const div = document.createElement('div');
+          div.className = 'slice-feedback';
+          div.textContent = '🍰🍴';
+          div.style.left = (e.clientX - 20) + 'px';
+          div.style.top = (e.clientY - 20) + 'px';
+          document.body.appendChild(div);
+          setTimeout(() => div.remove(), 400);
+        } else {
+          const div = document.createElement('div');
+          div.className = 'slice-feedback';
+          div.textContent = '⚠️';
+          div.style.left = (e.clientX - 15) + 'px';
+          div.style.top = (e.clientY - 15) + 'px';
+          document.body.appendChild(div);
+          setTimeout(() => div.remove(), 400);
+        }
+      }
+    }
+
+    function resetCakeAndCandle() {
+      slices = [{ start: 0, end: Math.PI * 2 }];
+      candleLit = true;
+      cuttingEnabled = false;
+      drawCake();
+      statusMsg.innerHTML = '🕯️ Click on the candle to blow it out first! 🕯️';
+    }
+
+    // Animation loop for flickering flame (only redraws flame part, but for simplicity redraw whole cake)
+    function animateFlame() {
+      if (candleLit) {
+        drawCake(); // full redraw, but flicker effect will be random each frame
+      }
+      requestAnimationFrame(animateFlame);
+    }
+
+    canvas.addEventListener('click', handleCanvasClick);
+    document.getElementById('resetBtn').addEventListener('click', resetCakeAndCandle);
+    document.getElementById('closeBtn').addEventListener('click', () => {
+      window.close();
+      setTimeout(() => window.location.href = '/', 100);
+    });
+
+    drawCake();
+    animateFlame(); // start flicker animation
+  })();
+</script>
+</body>
+</html>

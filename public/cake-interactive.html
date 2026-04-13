@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>🎂 Happy Birthday, Future Engineer! 🎂</title>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(145deg, #ffdde1 0%, #ee9ca7 100%);
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    .balloon {
+      position: fixed;
+      bottom: -100px;
+      width: 50px;
+      height: 70px;
+      background: radial-gradient(circle at 30% 30%, #ff9a9e, #fad0c4);
+      border-radius: 50%;
+      animation: floatUp 5s linear infinite;
+      opacity: 0.7;
+      pointer-events: none;
+    }
+    .balloon::after {
+      content: "🎈";
+      position: absolute;
+      bottom: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 20px;
+    }
+    @keyframes floatUp {
+      0% { transform: translateY(0) rotate(0deg); opacity: 0.8; }
+      100% { transform: translateY(-120vh) rotate(20deg); opacity: 0; }
+    }
+
+    .container {
+      background: rgba(94, 12, 12, 0.15);
+      backdrop-filter: blur(18px);
+      border-radius: 70px;
+      padding: 50px 60px;
+      text-align: center;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255,255,255,0.2);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      max-width: 90%;
+      width: 700px;
+      z-index: 10;
+    }
+
+    .cake-icon {
+      font-size: 5.5rem;
+      filter: drop-shadow(0 15px 20px rgba(0,0,0,0.2));
+      margin: 10px 0 15px;
+      animation: wobble 2.5s infinite ease, glow 1.5s infinite alternate;
+    }
+    @keyframes wobble {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(6deg); }
+      75% { transform: rotate(-6deg); }
+    }
+    @keyframes glow {
+      0% { text-shadow: 0 0 2px #ff99cc; }
+      100% { text-shadow: 0 0 20px #ff66aa; }
+    }
+
+    h1 {
+        font-family: 'Dancing Script', cursive;
+    font-size: 3rem;
+    background: linear-gradient(135deg, #ff1493, #000000, #ff85c1, #ffd1e8);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow:
+    0 2px 8px rgba(255, 20, 147, 0.35),
+    0 4px 14px rgba(255, 105, 180, 0.25),
+    0 0 18px rgba(255, 255, 255, 0.18);
+    margin-bottom: 25px;
+    letter-spacing: 2px;
+    font-weight: 700;
+    -webkit-text-stroke: 0.6px rgba(255, 240, 245, 0.65);
+    }
+
+    .message {
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(8px);
+      border-radius: 55px;
+      padding: 30px 25px;
+      margin: 20px 0;
+      border: 1px solid rgba(255,235,205,0.8);
+      box-shadow: inset 0 0 20px rgba(255,200,200,0.2), 0 10px 25px rgba(0,0,0,0.25);
+    }
+
+    .message p {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.25rem;
+      line-height: 1.8;
+      color: #fffaf0;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+      margin: 15px 0;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .message .highlight {
+      font-family: 'Dancing Script', cursive;
+      font-size: 1.7rem;
+      font-weight: bold;
+      background: linear-gradient(135deg, #FFF8E7, #FFE4B5);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: none;
+      font-weight: 800;
+    }
+
+    .btn-group {
+      margin-top: 30px;
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #ff66aa, #ff3388);
+      border: none;
+      padding: 12px 25px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: white;
+      border-radius: 60px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.3);
+      letter-spacing: 1px;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px) scale(1.02);
+      background: linear-gradient(135deg, #ff77bb, #0f0f0f);
+      box-shadow: 0 12px 25px rgba(0,0,0,0.35);
+    }
+
+    #closeBtn {
+      background: linear-gradient(135deg, #3366cc, #2244aa);
+    }
+    #closeBtn:hover {
+      background: linear-gradient(135deg, #4477dd, #3355bb);
+    }
+     #confetti-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 100;
+        }
+    footer {
+      margin-top: 30px;
+      font-size: 0.9rem;
+      font-family: 'Poppins', sans-serif;
+      color: #FFF5E6;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      letter-spacing: 0.5px;
+      font-weight: 500;
+    }
+
+    /* Modal for gallery */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(15px);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(10px);
+      border-radius: 40px;
+      padding: 20px;
+      width: 95%;
+      max-width: 1400px;
+      display: flex;
+      flex-direction: column;
+      animation: fadeInUp 0.4s ease;
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 25px;
+      color: white;
+      font-size: 1.8rem;
+      border-bottom: 1px solid rgba(255,255,255,0.3);
+    }
+    .hint-text {
+  text-align: center;
+  color: rgba(255,255,200,0.7);
+  font-size: 0.9rem;
+  padding: 8px;
+  margin: 5px 0;
+  font-family: 'Poppins', sans-serif;
+  letter-spacing: 0.5px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 40px;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+  backdrop-filter: blur(4px);
+   }
+    .close-modal {
+      cursor: pointer;
+      font-size: 2rem;
+      background: none;
+      border: none;
+      color: white;
+    }
+    .image-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 25px;
+      justify-content: center;
+      padding: 25px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .image-card {
+      background: rgba(0,0,0,0.5);
+      border-radius: 30px;
+      padding: 15px;
+      width: 260px;
+      text-align: center;
+      transition: 0.2s;
+      cursor: pointer;
+    }
+    .image-card img {
+      width: 100%;
+      border-radius: 20px;
+      height: 200px;
+      object-fit: cover;
+    }
+    .image-card p {
+      color: #fff0cc;
+      margin-top: 10px;
+      font-size: 1rem;
+       white-space: pre-line;
+    }
+    /* Camera Modal */
+    .camera-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.9);
+      z-index: 1100;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+    .camera-box {
+      background: #222;
+      border-radius: 40px;
+      padding: 20px;
+      text-align: center;
+    }
+    video, canvas {
+      border-radius: 30px;
+      width: 90%;
+      max-width: 500px;
+      margin: 10px auto;
+    }
+    .camera-buttons {
+      margin-top: 15px;
+    }
+    .cam-btn {
+      background: #000000;
+      border: none;
+      padding: 10px 20px;
+      margin: 5px;
+      border-radius: 40px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .confetti-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 100;
+    }
+    /* ছোট পর্দার জন্য */
+    @media (max-width: 768px) {
+  .modal-content { width: 98%; height: 95%; padding: 10px; }
+  .image-card { width: 180px; }
+  .image-card img { height: 150px; }
+  .modal-header { font-size: 1.2rem; padding: 10px; }
+   }
+  </style>
+</head>
+<body>
+
+<div id="balloon-container"></div>
+<canvas id="confetti-canvas" class="confetti-canvas"></canvas>
+
+<div class="container">
+  <div class="cake-icon">🎂✨</div>
+  <h1>Happy Birthday, Future Engineer! 🎉</h1>
+  <div class="message">
+    <p>✨ Design your dream city, brick by grace,</p>
+    <p>🏗️ Raise your towers of happiness, space by space.</p>
+    <p>💖 Let love be the cement that holds you tight,</p>
+    <p>🔩 And trust be the steel in every beam of light.</p>
+    <p class="highlight">💕Happy Birthday, my engineer of heart – you make life right.💕</p>
+  </div>
+  <div class="btn-group">
+    <button class="btn" id="celebrateBtn">🎊 Celebrate 🎊</button>
+    <button class="btn" id="galleryBtn">📸 Memories</button>
+    <button class="btn" id="cameraBtn">📷 Take Photo</button>
+    <button class="btn" id="closeBtn">🔙 Back to Site</button>
+  </div>
+  <footer>✨ Made with love for a civil soul ✨</footer>
+</div>
+
+<!-- Memories Gallery Modal -->
+<div id="imageModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span>📸 Birthday Memories</span>
+      <button class="close-modal" id="closeModalBtn">&times;</button>
+    </div>
+     <div class="hint-text">✨ Click any photo to view full image ✨</div>
+    <div class="image-grid" id="imageGrid">
+      <!-- Images will be dynamically added -->
+    </div>
+  </div>
+</div>
+
+<!-- Camera Modal -->
+<div id="cameraModal" class="camera-modal">
+  <div class="camera-box">
+    <video id="video" autoplay playsinline></video>
+    <canvas id="canvas" style="display:none;"></canvas>
+    <div class="camera-buttons">
+      <button class="cam-btn" id="captureBtn">📸 Capture</button>
+      <button class="cam-btn" id="closeCameraBtn">❌ Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ----- balloons (same as before) -----
+  const balloonContainer = document.getElementById('balloon-container');
+  function createBalloon() {
+    const balloon = document.createElement('div');
+    balloon.classList.add('balloon');
+    const colors = ['#ff9a9e', '#fad0c4', '#fad0c4', '#a1c4fd', '#c2e9fb', '#ffdde1'];
+    balloon.style.background = `radial-gradient(circle at 30% 30%, ${colors[Math.floor(Math.random() * colors.length)]}, #ffb7b2)`;
+    balloon.style.left = Math.random() * 100 + '%';
+    balloon.style.width = (30 + Math.random() * 40) + 'px';
+    balloon.style.height = (40 + Math.random() * 50) + 'px';
+    balloon.style.animationDuration = 6 + Math.random() * 5 + 's';
+    balloon.style.animationDelay = Math.random() * 8 + 's';
+    balloonContainer.appendChild(balloon);
+    setTimeout(() => balloon.remove(), 13000);
+  }
+  for (let i = 0; i < 12; i++) setTimeout(createBalloon, i * 700);
+  setInterval(createBalloon, 2000);
+
+  // ----- confetti (same) -----
+  const canvasConf = document.getElementById('confetti-canvas');
+  const ctxConf = canvasConf.getContext('2d');
+  let width = window.innerWidth;
+  let height = window.innerHeight;
+  let particles = [];
+  let animationId = null;
+
+  function resizeCanvas() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvasConf.width = width;
+    canvasConf.height = height;
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  class ConfettiParticle {
+    constructor() {
+      this.x = Math.random() * width;
+      this.y = Math.random() * height - height;
+      this.size = Math.random() * 6 + 2;
+      this.speedY = Math.random() * 3 + 2;
+      this.speedX = (Math.random() - 0.5) * 2;
+      this.color = `hsl(${Math.random() * 360}, 80%, 60%)`;
+      this.rotation = Math.random() * 360;
+      this.rotSpeed = (Math.random() - 0.5) * 0.1;
+    }
+    update() {
+      this.y += this.speedY;
+      this.x += this.speedX;
+      this.rotation += this.rotSpeed;
+      if (this.y > height + 50) {
+        this.y = -50;
+        this.x = Math.random() * width;
+      }
+    }
+    draw() {
+      ctxConf.save();
+      ctxConf.translate(this.x, this.y);
+      ctxConf.rotate(this.rotation * Math.PI / 180);
+      ctxConf.fillStyle = this.color;
+      ctxConf.fillRect(-this.size/2, -this.size/2, this.size, this.size);
+      ctxConf.restore();
+    }
+  }
+
+  function startConfetti() {
+    if (animationId) cancelAnimationFrame(animationId);
+    particles = [];
+    for (let i = 0; i < 150; i++) particles.push(new ConfettiParticle());
+    function animateConfetti() {
+      ctxConf.clearRect(0, 0, width, height);
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+      animationId = requestAnimationFrame(animateConfetti);
+    }
+    animateConfetti();
+    setTimeout(() => {
+      if (animationId) cancelAnimationFrame(animationId);
+      ctxConf.clearRect(0, 0, width, height);
+      animationId = null;
+    }, 4000);
+  }
+
+ // ----- Gallery data (initial images) -----
+let galleryImages = [
+  { src: "src/assets/2023.jpg", caption: "2023\nOur Best Celebration" },
+  { src: "src/assets/2024.jpg", caption: "2024\nAn Unwanted Distance" },
+  { src: "src/assets/2025.jpeg", caption: "2025\nGOD's Plan" },
+  { src: "src/assets/2025 02.jpeg", caption: "2025\nAnother Beautiful Moment" },
+  { src: "src/assets/2025 03.jpeg", caption: "2025\nA Special Day" },
+  { src: "src/assets/2025 04.jpeg", caption: "2025\nUnforgettable Memory" },
+  { src: "src/assets/2026.jpg", caption: "2026\nFar Away To You\nPlease Take A Photo Of You ❤️" }
+];
+
+  // গ্যালারি রেন্ডার (প্রতিটি ছবিতে ক্লিক করলে ইনডেক্স পাঠাবে)
+function renderGallery() {
+  const grid = document.getElementById('imageGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  
+  galleryImages.forEach((img, idx) => {
+    const card = document.createElement('div');
+    card.className = 'image-card';
+    card.innerHTML = `<img src="${img.src}" alt="memory"><p>${img.caption}</p>`;
+    
+    const imgElement = card.querySelector('img');
+    imgElement.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showFullImageViewer(idx);  // ইনডেক্স সহ কল
+    });
+    
+    grid.appendChild(card);
+  });
+}
+
+  // পূর্ণ পর্দায় ছবি দেখানো (অ্যারো ও ক্যাপশন সহ)
+  function showFullImageViewer(startIndex) {
+  let currentIndex = startIndex;
+  const images = galleryImages;  // পুরো অ্যারে
+  
+  // ওভারলে তৈরি
+  const overlay = document.createElement('div');
+  overlay.style.position = 'fixed';
+  overlay.style.top = '0';
+  overlay.style.left = '0';
+  overlay.style.width = '100%';
+  overlay.style.height = '100%';
+  overlay.style.background = 'rgba(0,0,0,0.95)';
+  overlay.style.zIndex = '2000';
+  overlay.style.display = 'flex';
+  overlay.style.flexDirection = 'column';
+  overlay.style.alignItems = 'center';
+  overlay.style.justifyContent = 'center';
+  overlay.style.cursor = 'pointer';
+  
+  // ছবি ধারক
+  const imgContainer = document.createElement('div');
+  imgContainer.style.position = 'relative';
+  imgContainer.style.display = 'flex';
+  imgContainer.style.alignItems = 'center';
+  imgContainer.style.justifyContent = 'center';
+  imgContainer.style.width = '100%';
+  imgContainer.style.height = '80%';
+  
+  const imgEl = document.createElement('img');
+  imgEl.src = images[currentIndex].src;
+  imgEl.style.maxWidth = '90%';
+  imgEl.style.maxHeight = '90%';
+  imgEl.style.borderRadius = '20px';
+  imgEl.style.objectFit = 'contain';
+  imgEl.style.boxShadow = '0 0 30px rgba(0,0,0,0.5)';
+  
+  // ক্যাপশন (নিচে সাবটল)
+  const captionEl = document.createElement('div');
+  captionEl.textContent = images[currentIndex].caption;
+  captionEl.style.color = 'rgba(255,255,200,0.8)';
+  captionEl.style.fontSize = '1.2rem';
+  captionEl.style.fontFamily = 'Poppins, sans-serif';
+  captionEl.style.marginTop = '20px';
+  captionEl.style.textAlign = 'center';
+  captionEl.style.textShadow = '0 1px 2px black';
+  captionEl.style.background = 'rgba(0,0,0,0.5)';
+  captionEl.style.padding = '8px 20px';
+  captionEl.style.borderRadius = '40px';
+  captionEl.style.backdropFilter = 'blur(5px)';
+  
+  // বাম অ্যারো
+  const leftArrow = document.createElement('div');
+  leftArrow.innerHTML = '&#10094;';
+  leftArrow.style.position = 'absolute';
+  leftArrow.style.left = '20px';
+  leftArrow.style.top = '50%';
+  leftArrow.style.transform = 'translateY(-50%)';
+  leftArrow.style.fontSize = '3rem';
+  leftArrow.style.color = 'white';
+  leftArrow.style.cursor = 'pointer';
+  leftArrow.style.background = 'rgba(0,0,0,0.5)';
+  leftArrow.style.width = '50px';
+  leftArrow.style.height = '50px';
+  leftArrow.style.borderRadius = '50%';
+  leftArrow.style.display = 'flex';
+  leftArrow.style.alignItems = 'center';
+  leftArrow.style.justifyContent = 'center';
+  leftArrow.style.transition = '0.2s';
+  leftArrow.style.userSelect = 'none';
+  leftArrow.onmouseenter = () => leftArrow.style.background = 'rgba(0,0,0,0.8)';
+  leftArrow.onmouseleave = () => leftArrow.style.background = 'rgba(0,0,0,0.5)';
+  
+  // ডান অ্যারো
+  const rightArrow = document.createElement('div');
+  rightArrow.innerHTML = '&#10095;';
+  rightArrow.style.position = 'absolute';
+  rightArrow.style.right = '20px';
+  rightArrow.style.top = '50%';
+  rightArrow.style.transform = 'translateY(-50%)';
+  rightArrow.style.fontSize = '3rem';
+  rightArrow.style.color = 'white';
+  rightArrow.style.cursor = 'pointer';
+  rightArrow.style.background = 'rgba(0,0,0,0.5)';
+  rightArrow.style.width = '50px';
+  rightArrow.style.height = '50px';
+  rightArrow.style.borderRadius = '50%';
+  rightArrow.style.display = 'flex';
+  rightArrow.style.alignItems = 'center';
+  rightArrow.style.justifyContent = 'center';
+  rightArrow.style.transition = '0.2s';
+  rightArrow.style.userSelect = 'none';
+  rightArrow.onmouseenter = () => rightArrow.style.background = 'rgba(0,0,0,0.8)';
+  rightArrow.onmouseleave = () => rightArrow.style.background = 'rgba(0,0,0,0.5)';
+  
+  // ক্লোজ বাটন (X)
+  const closeBtn = document.createElement('div');
+  closeBtn.innerHTML = '&times;';
+  closeBtn.style.position = 'absolute';
+  closeBtn.style.top = '20px';
+  closeBtn.style.right = '30px';
+  closeBtn.style.fontSize = '3rem';
+  closeBtn.style.color = 'white';
+  closeBtn.style.cursor = 'pointer';
+  closeBtn.style.fontWeight = 'bold';
+  closeBtn.style.background = 'rgba(0,0,0,0.5)';
+  closeBtn.style.width = '50px';
+  closeBtn.style.height = '50px';
+  closeBtn.style.borderRadius = '50%';
+  closeBtn.style.display = 'flex';
+  closeBtn.style.alignItems = 'center';
+  closeBtn.style.justifyContent = 'center';
+  closeBtn.style.transition = '0.2s';
+  closeBtn.onmouseenter = () => closeBtn.style.background = 'rgba(255,0,0,0.7)';
+  closeBtn.onmouseleave = () => closeBtn.style.background = 'rgba(0,0,0,0.5)';
+  
+  // আপডেট ফাংশন (ছবি ও ক্যাপশন পরিবর্তন)
+  function updateViewer() {
+    imgEl.src = images[currentIndex].src;
+    captionEl.textContent = images[currentIndex].caption;
+    // অ্যারো গোপন/দেখান (প্রয়োজন হলে)
+    leftArrow.style.visibility = images.length === 1 ? 'hidden' : 'visible';
+    rightArrow.style.visibility = images.length === 1 ? 'hidden' : 'visible';
+  }
+  
+  // অ্যারো ক্লিক ইভেন্ট
+  leftArrow.addEventListener('click', (e) => {
+    e.stopPropagation();
+    currentIndex = (currentIndex - 1 + images.length) % images.length;
+    updateViewer();
+  });
+  rightArrow.addEventListener('click', (e) => {
+    e.stopPropagation();
+    currentIndex = (currentIndex + 1) % images.length;
+    updateViewer();
+  });
+  
+  // ওভারলে ক্লিক করলে বন্ধ (শুধু ব্যাকগ্রাউন্ডে)
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) overlay.remove();
+  });
+  closeBtn.addEventListener('click', () => overlay.remove());
+  
+  // সব এলিমেন্ট যোগ
+  imgContainer.appendChild(imgEl);
+  imgContainer.appendChild(leftArrow);
+  imgContainer.appendChild(rightArrow);
+  overlay.appendChild(closeBtn);
+  overlay.appendChild(imgContainer);
+  overlay.appendChild(captionEl);
+  document.body.appendChild(overlay);
+  
+  updateViewer();
+ }
+
+  // ----- Camera functionality -----
+  const cameraModal = document.getElementById('cameraModal');
+  const video = document.getElementById('video');
+  const canvasPhoto = document.getElementById('canvas');
+  const captureBtn = document.getElementById('captureBtn');
+  const closeCameraBtn = document.getElementById('closeCameraBtn');
+  let stream = null;
+
+  async function openCamera() {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      video.srcObject = stream;
+      await video.play();
+      cameraModal.style.display = 'flex';
+    } catch (err) {
+      alert("Camera not accessible: " + err.message);
+    }
+  }
+
+  function closeCamera() {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      stream = null;
+    }
+    video.srcObject = null;
+    cameraModal.style.display = 'none';
+  }
+
+  function capturePhoto() {
+    const context = canvasPhoto.getContext('2d');
+    canvasPhoto.width = video.videoWidth;
+    canvasPhoto.height = video.videoHeight;
+    context.drawImage(video, 0, 0, canvasPhoto.width, canvasPhoto.height);
+    const imageDataURL = canvasPhoto.toDataURL('image/png');
+    // Add new image to gallery
+    galleryImages.push({ src: imageDataURL, caption: "2026\nFar Away to You" });
+    renderGallery();
+    closeCamera();
+    // show success feedback
+    const div = document.createElement('div');
+    div.textContent = '📸 Photo added to memories!';
+    div.style.position = 'fixed';
+    div.style.bottom = '20px';
+    div.style.left = '50%';
+    div.style.transform = 'translateX(-50%)';
+    div.style.background = 'rgba(0,0,0,0.7)';
+    div.style.color = 'white';
+    div.style.padding = '10px 20px';
+    div.style.borderRadius = '40px';
+    div.style.zIndex = '2000';
+    document.body.appendChild(div);
+    setTimeout(() => div.remove(), 2000);
+  }
+
+  // ----- Modal handlers for gallery -----
+  const modal = document.getElementById('imageModal');
+  const galleryBtn = document.getElementById('galleryBtn');
+  const closeModalBtn = document.getElementById('closeModalBtn');
+
+  galleryBtn.addEventListener('click', () => {
+    renderGallery();
+    modal.style.display = 'flex';
+  });
+  closeModalBtn.addEventListener('click', () => {
+    modal.style.display = 'none';
+  });
+  window.addEventListener('click', (e) => {
+    if (e.target === modal) modal.style.display = 'none';
+    if (e.target === cameraModal) closeCamera();
+  });
+
+  // Camera button
+  document.getElementById('cameraBtn').addEventListener('click', openCamera);
+  captureBtn.addEventListener('click', capturePhoto);
+  closeCameraBtn.addEventListener('click', closeCamera);
+
+  // ----- Other buttons -----
+  document.getElementById('celebrateBtn').addEventListener('click', () => {
+    window.open('cake-cut.html', '_blank');
+  });
+  document.getElementById('closeBtn').addEventListener('click', () => {
+    window.close();
+    setTimeout(() => window.location.href = '/', 100);
+  });
+
+  // initial confetti
+  setTimeout(() => {
+    startConfetti();
+  }, 500);
+</script>
+</body>
+</html>

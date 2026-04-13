@@ -1,0 +1,290 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 1100px;
+  max-height: 680px;
+  border-radius: 28px;
+  cursor: pointer;
+  margin: 0 auto;
+}
+.wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.wrap {
+    position: relative;
+    width: 1100px;
+    height: 680px;
+    margin: 0 auto;
+    border-radius: 32px;
+    box-shadow: 0 0 40px rgba(0,255,255,0.2);
+}
+
+.cake-hint {
+    position: absolute;
+    bottom: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px);
+    padding: 12px 24px;
+    border-radius: 60px;
+    z-index: 25;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #ffdd99;
+    border: 1px solid #ffaa66;
+    box-shadow: 0 0 15px rgba(255,170,100,0.5);
+    pointer-events: none;
+    white-space: nowrap;
+    font-family: 'Dancing Script', cursive;
+    letter-spacing: 1px;
+}
+.cake-hint::before { content: "🎂 "; font-size: 1.3rem; }
+.cake-hint::after { content: " ✨"; }
+
+#text {
+    position: absolute;
+    left: 50%;
+    top: 20px;
+    transform: translateX(-50%);
+    background: transparent;
+    padding: 12px 20px;
+    z-index: 20;
+    text-align: center;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+}
+.say {
+  transition: all 0.2s ease;
+  display: inline-block;
+}
+#code {
+    color: #fff5e6;
+    font-size: 1.35rem;
+    text-shadow: 0 0 12px #ff66aa;
+    font-family: 'Dancing Script', 'Pacifico', cursive;
+}
+#code .say {
+  display: inline-block;
+  margin: 0 6px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+#code .say.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#code .say:last-child::after { content: ""; }
+
+#clock-box {
+    position: absolute;
+    bottom: 60px;
+    right: 20px;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(12px);
+    padding: 8px 22px;
+    border-radius: 60px;
+    font-family: monospace;
+    font-size: 0.95rem;
+    border: 1px solid cyan;
+    color: cyan;
+}
+
+canvas {
+    display: block;
+    width: 1100px;
+    height: 680px;
+    border-radius: 28px;
+    cursor: pointer;
+}
+
+.start-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.92);
+    backdrop-filter: blur(14px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    transition: opacity 0.8s ease;
+}
+
+.start-card {
+    background: linear-gradient(145deg, #1e1a2f, #0a0718);
+    border-radius: 70px;
+    padding: 50px 60px;
+    text-align: center;
+    border: 2px solid #ff88aa;
+    box-shadow: 0 0 80px rgba(255,100,150,0.5);
+    cursor: pointer;
+    animation: gentlePulse 2.2s infinite alternate;
+}
+.start-card p {
+    font-size: 1.3rem;
+    color: #ffe0e7;
+    margin: 20px 0;
+}
+.start-card .click-hint {
+    margin-top: 15px;
+    font-size: 0.9rem;
+    color: #ffccaa;
+}
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  overflow: hidden;
+  background: #000;
+}
+
+.wrap {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 30% 10%, #010118, #000000);
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+#text {
+  position: fixed;
+  left: 50%;
+  top: 20%;
+  transform: translateX(-50%);
+  z-index: 20;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+  max-width: 90vw;
+  white-space: normal;
+  background: transparent;
+}
+
+#code {
+  color: #fff5e6;
+  font-size: clamp(1rem, 3vw, 1.8rem);
+  text-shadow: 0 0 8px #ff66aa,0 0 16px #ff44aa, 0 0 24px #ff2288;
+  font-family: 'Dancing Script', cursive;
+  background: transparent;
+  backdrop-filter: none;
+  padding: 8px 20px;
+  display: inline-block;
+}
+
+#code .say {
+  display: block !important;      /* প্রতিটি স্প্যানকে ব্লক লেভেলে নিয়ে যাবে */
+  margin: 8px 0 !important;       /* উপরে-নিচে গ্যাপ */
+  white-space: normal !important; /* লাইন ব্রেক সমর্থন */
+  text-align: center !important;  /* মাঝখানে সেন্টার */
+  clear: both !important;
+}
+
+
+#clock-box {
+  position: fixed;
+  bottom: 80px;
+  right: 300px;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(12px);
+  padding: 6px 16px;
+  border-radius: 60px;
+  font-family: monospace;
+  font-size: 0.9rem;
+  border: 1px solid cyan;
+  color: cyan;
+  z-index: 30;
+}
+
+.cake-hint {
+  position: fixed;
+  bottom: 72px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(8px);
+  padding: 8px 20px;
+  border-radius: 60px;
+  z-index: 25;
+  font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+  font-weight: bold;
+  color: #ffdd99;
+  border: 1px solid #ffaa66;
+  pointer-events: none;
+  white-space: nowrap;
+  font-family: 'Dancing Script', cursive;
+}
+
+.start-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.92);
+  backdrop-filter: blur(14px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  transition: opacity 0.8s ease;
+}
+
+.start-card {
+  background: linear-gradient(145deg, #1e1a2f, #0a0718);
+  border-radius: 70px;
+  padding: 40px 50px;
+  text-align: center;
+  border: 2px solid #ff88aa;
+  box-shadow: 0 0 80px rgba(255,100,150,0.5);
+  cursor: pointer;
+  animation: gentlePulse 2.2s infinite alternate;
+}
+
+.start-card p {
+  font-size: clamp(1rem, 4vw, 1.5rem);
+  color: #ffe0e7;
+  margin: 15px 0;
+}
+
+@keyframes gentlePulse {
+  0% { transform: scale(1); box-shadow: 0 0 40px rgba(255,100,150,0.3); }
+  100% { transform: scale(1.01); box-shadow: 0 0 90px rgba(255,100,150,0.7); }
+}
+
+@media (max-width: 768px) {
+  .start-card {
+    padding: 25px 30px;
+    border-radius: 50px;
+  }
+  #code .say {
+    white-space: normal;
+    display: inline-block;
+  }
+}
+@keyframes gentlePulse {
+    0% { transform: scale(1); box-shadow: 0 0 40px rgba(255,100,150,0.3); }
+    100% { transform: scale(1.01); box-shadow: 0 0 90px rgba(255,100,150,0.7); }
+}
+.fade-out { opacity: 0; pointer-events: none; }
