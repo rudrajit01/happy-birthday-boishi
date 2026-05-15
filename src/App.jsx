@@ -3,7 +3,7 @@ import './App.css';
 
 function App() {
   const canvasRef = useRef(null);
-  const audioRef = useRef(null);
+  const audioRef = use(null);
   const [animationStarted, setAnimationStarted] = useState(false);
   const [cakeComplete, setCakeComplete] = useState(false);
   const [typingStarted, setTypingStarted] = useState(false);
@@ -278,15 +278,12 @@ function App() {
       }
     };
 
-    // Worker drawing – stops moving when cakeComplete, and shows "Happy Birthday" text above
     const drawWorker = (worker, time, isComplete) => {
       const { x: sx, y: sy } = scaleRef.current;
-      // update position only if cake not complete
       if (!isComplete) {
         worker.x += worker.speed * worker.dir;
         if (worker.x > 950) worker.dir = -1;
         if (worker.x < 150) worker.dir = 1;
-        // update leg/arm phases only when moving
         worker.legPhase += 0.03;
         worker.armPhase += 0.035;
       }
@@ -296,26 +293,21 @@ function App() {
       const xPos = worker.x * sx;
       const yPos = (BASE_H - 80) * sy;
       
-      // Helmet
       ctx.fillStyle = "#ff9900";
       ctx.beginPath();
       ctx.ellipse(xPos + 8 * sx, yPos - 12 * sy, 8 * sx, 6 * sy, 0, 0, Math.PI * 2);
       ctx.fill();
-      // Head
       ctx.fillStyle = "#f5cba0";
       ctx.beginPath();
       ctx.arc(xPos + 8 * sx, yPos - 6 * sy, 6 * sx, 0, Math.PI * 2);
       ctx.fill();
-      // Body
       ctx.fillStyle = "#3366cc";
       ctx.fillRect(xPos + 3 * sx, yPos - 2 * sy, 10 * sx, 12 * sy);
-      // Legs
       ctx.fillStyle = "#2255aa";
       const leftLegX = xPos + 3 * sx + legOffset * 2 * sx;
       const rightLegX = xPos + 9 * sx - legOffset * 2 * sx;
       ctx.fillRect(leftLegX, yPos + 8 * sy, 4 * sx, 8 * sy);
       ctx.fillRect(rightLegX, yPos + 8 * sy, 4 * sx, 8 * sy);
-      // Arms
       ctx.beginPath();
       ctx.moveTo(xPos + 13 * sx, yPos);
       ctx.lineTo(xPos + 18 * sx + armOffset * 5 * sx, yPos + 5 * sy + Math.abs(armOffset) * 3 * sy);
@@ -327,7 +319,6 @@ function App() {
       ctx.lineTo(xPos - 2 * sx - armOffset * 5 * sx, yPos + 5 * sy + Math.abs(armOffset) * 3 * sy);
       ctx.stroke();
 
-      // If cake complete, show "Happy Birthday" text above worker
       if (isComplete) {
         ctx.font = `bold ${14 * Math.min(sx, sy)}px 'Segoe UI', 'Dancing Script', cursive`;
         ctx.fillStyle = "#ffdd99";
@@ -389,9 +380,11 @@ function App() {
       ctx.fillText("📐 PLAN", bx + 5 * sx, by + 12 * sy);
     };
 
-    // FIXED: Handle canvas click with dynamic cake dimensions (works on both mobile and PC)
+    // ========== FIXED CLICK HANDLER ==========
     const handleCanvasClick = (e) => {
+      console.log("Canvas clicked, cakeComplete:", cakeComplete); // Debug log
       if (!cakeComplete) return;
+
       const rect = canvas.getBoundingClientRect();
       const scaleX = canvas.width / rect.width;
       const scaleY = canvas.height / rect.height;
@@ -401,7 +394,6 @@ function App() {
       const { cakeX, cakeY, tiers } = baseDataRef.current;
       const { x: sx, y: sy } = scaleRef.current;
       
-      // Dynamically compute cake bounding box (matching the drawing logic)
       const maxTierWidth = Math.max(...tiers.map(t => t.w));
       const totalCakeHeight = tiers.reduce((sum, t) => sum + t.h, 0);
       
@@ -410,14 +402,22 @@ function App() {
       const cakeTop = cakeY * sy - (totalCakeHeight * sy);
       const cakeBottom = cakeY * sy;
       
+      console.log(`Click at (${mouseX}, ${mouseY}) | Cake area: x(${cakeLeft}–${cakeRight}) y(${cakeTop}–${cakeBottom})`);
+      
       if (mouseX > cakeLeft && mouseX < cakeRight && mouseY > cakeTop && mouseY < cakeBottom) {
-        // Small delay to help with popup blockers on desktop
+        console.log("Cake clicked! Opening new window...");
         setTimeout(() => {
-          window.open('cake-interactive.html', '_blank');
+          const newWindow = window.open('cake-interactive.html', '_blank');
+          if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+            alert("Please allow pop-ups for this site to see the magic! 🎂");
+          }
         }, 50);
+      } else {
+        console.log("Click outside cake area");
       }
     };
     canvas.addEventListener('click', handleCanvasClick);
+    // =========================================
 
     function animate(now) {
       const elapsed = now - startTimeRef.current;
@@ -435,12 +435,31 @@ function App() {
       drawCake(progress);
       drawSnow(now);
 
-      // Draw extra elements (workers etc.)
       if (animationStarted) {
         workersRef.current.forEach(worker => drawWorker(worker, now, cakeComplete));
         drawCementMixer(now);
         drawWarningLight(now);
         drawBlueprint();
+      }
+
+      // DEBUG: Draw red rectangle around cake when complete (helps verify click area)
+      if (cakeComplete) {
+        const { cakeX, cakeY, tiers } = baseDataRef.current;
+        const { x: sx, y: sy } = scaleRef.current;
+        const maxTierWidth = Math.max(...tiers.map(t => t.w));
+        const totalCakeHeight = tiers.reduce((sum, t) => sum + t.h, 0);
+        const left = (cakeX - maxTierWidth/2) * sx;
+        const right = (cakeX + maxTierWidth/2) * sx;
+        const top = cakeY * sy - (totalCakeHeight * sy);
+        const bottom = cakeY * sy;
+        ctx.save();
+        ctx.globalAlpha = 0.3;
+        ctx.fillStyle = "#ff0000";
+        ctx.fillRect(left, top, right - left, bottom - top);
+        ctx.restore();
+        ctx.strokeStyle = "#ff0000";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(left, top, right - left, bottom - top);
       }
 
       if (progress < 1) {
@@ -468,48 +487,45 @@ function App() {
     setAnimationStarted(true);
     const textDiv = document.getElementById('text');
     if (textDiv) textDiv.style.opacity = '1';
-    // audio with 2s delay
     setTimeout(() => {
       audioRef.current?.play().catch(() => {});
     }, 0);
   };
 
   return (
-  <div className="wrap">
-    <div id="text">
-      <div id="code"></div>
-    </div>
+    <div className="wrap">
+      <div id="text">
+        <div id="code"></div>
+      </div>
 
-    <div id="clock-box">
-      <span id="clock">🎂✨ Creating your world ✨🎂</span>
-    </div>
+      <div id="clock-box">
+        <span id="clock">🎂✨ Creating your world ✨🎂</span>
+      </div>
 
-    <canvas ref={canvasRef}></canvas>
+      <canvas ref={canvasRef}></canvas>
 
-    <div className="cake-hint">
-      💖 Click The Cake With Your Own Risk 💖
-    </div>
+      <div className="cake-hint">
+        💖 Click The Cake With Your Own Risk 💖
+      </div>
 
-    {!animationStarted && (
-      <div className="start-modal">
-        <div className="start-card" onClick={startExperience}>
-          <p className="main-line">✨💌 OPEN THE BOX, DEAR 💌✨</p>
-
-          <p className="sub-line">
-            Sending love from my cyber heart   
-            to your civil soul 🏗️✨
-          </p>
-
-          <div className="click-hint">
-            💫👉 Touch here and unlock magic 👈💫
+      {!animationStarted && (
+        <div className="start-modal">
+          <div className="start-card" onClick={startExperience}>
+            <p className="main-line">✨💌 OPEN THE BOX, DEAR 💌✨</p>
+            <p className="sub-line">
+              Sending love from my cyber heart   
+              to your civil soul 🏗️✨
+            </p>
+            <div className="click-hint">
+              💫👉 Touch here and unlock magic 👈💫
+            </div>
           </div>
         </div>
-      </div>
-    )}
+      )}
 
-    <audio ref={audioRef} src="/aud.mp3" preload="auto" />
-  </div>
-);
+      <audio ref={audioRef} src="/aud.mp3" preload="auto" />
+    </div>
+  );
 }
 
 export default App;
