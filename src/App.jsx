@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import './App.css';
 
 function App() {
   const canvasRef = useRef(null);
@@ -12,13 +13,7 @@ function App() {
   const baseDataRef = useRef(null);
   const scaleRef = useRef({ x: 1, y: 1 });
 
-  // Fixed canvas size (you can adjust, but this ensures visibility)
-  const CANVAS_WIDTH = 1100;
-  const CANVAS_HEIGHT = 680;
-  const BUILD_DURATION = 6500;
-  const BASE_W = 1100;
-  const BASE_H = 680;
-
+  // Workers data
   const workersRef = useRef([
     { x: 250, dir: 1, speed: 0.6, legPhase: 0, armPhase: 0 },
     { x: 550, dir: -1, speed: 0.5, legPhase: 1.2, armPhase: 0.8 },
@@ -26,7 +21,11 @@ function App() {
     { x: 450, dir: -1, speed: 0.55, legPhase: 3.0, armPhase: 2.2 }
   ]);
 
-  // Typing effect
+  const BUILD_DURATION = 6500;
+  const BASE_W = 1100;
+  const BASE_H = 680;
+
+  // typing effect
   useEffect(() => {
     if (!typingStarted) return;
     const elements = baseDataRef.current?.sayElements;
@@ -125,31 +124,44 @@ function App() {
     initializedRef.current = true;
 
     baseDataRef.current = generateBaseData();
+
     const canvas = canvasRef.current;
-    if (!canvas) return;
     const ctx = canvas.getContext("2d");
 
-    // Fixed canvas size (no window dependency)
-    canvas.width = CANVAS_WIDTH;
-    canvas.height = CANVAS_HEIGHT;
-    scaleRef.current = { x: 1, y: 1 }; // No scaling needed because we use fixed size
+    let width, height;
+    let animationId;
 
+    const updateCanvasSize = () => {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width;
+      canvas.height = height;
+      scaleRef.current = { x: width / BASE_W, y: height / BASE_H };
+    };
+
+    const handleResize = () => {
+      updateCanvasSize();
+    };
+
+    window.addEventListener('resize', handleResize);
+    updateCanvasSize();
     startTimeRef.current = performance.now();
 
-    // Drawing functions (same as before, but with fixed dimensions)
+    // drawing helpers
     const drawSky = () => {
-      const grad = ctx.createLinearGradient(0, 0, 0, CANVAS_HEIGHT);
+      const grad = ctx.createLinearGradient(0, 0, 0, height);
       grad.addColorStop(0, "#02021a");
       grad.addColorStop(1, "#13002d");
       ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      ctx.fillRect(0, 0, width, height);
     };
 
     const drawStars = () => {
       const { stars } = baseDataRef.current;
+      const { x: sx, y: sy } = scaleRef.current;
       stars.forEach(s => {
         ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.arc(s.x * sx, s.y * sy, s.r * Math.min(sx, sy), 0, Math.PI * 2);
         ctx.fillStyle = `rgba(255,255,220,${s.a})`;
         ctx.fill();
       });
@@ -157,15 +169,16 @@ function App() {
 
     const drawSnow = (time) => {
       const { snowflakes } = baseDataRef.current;
+      const { x: sx, y: sy } = scaleRef.current;
       snowflakes.forEach(f => {
-        f.y += f.speedY;
-        if (f.y > CANVAS_HEIGHT + 10) {
-          f.y = -10;
-          f.x = Math.random() * CANVAS_WIDTH;
+        f.y += f.speedY * (sy / 1.5);
+        if (f.y * sy > height + 10) {
+          f.y = -10 / sy;
+          f.x = Math.random() * BASE_W;
         }
         const driftX = Math.sin(time * 0.001 + f.phase) * f.drift;
         ctx.beginPath();
-        ctx.arc(f.x + driftX, f.y, f.size, 0, Math.PI * 2);
+        ctx.arc((f.x + driftX) * sx, f.y * sy, f.size * Math.min(sx, sy), 0, Math.PI * 2);
         ctx.fillStyle = `rgba(255,255,255,${f.opacity})`;
         ctx.fill();
       });
@@ -173,51 +186,59 @@ function App() {
 
     const drawBuildings = (progress, time) => {
       const { buildings } = baseDataRef.current;
+      const { x: sx, y: sy } = scaleRef.current;
       buildings.forEach(b => {
         const exact = progress * b.floors;
         const full = Math.floor(exact);
-        const floorH = 12;
+        const floorH = 12 * sy;
         const totalH = exact * floorH;
-        const baseGroundY = BASE_H - 70;
+        const baseGroundY = (BASE_H - 70) * sy;
         const y = baseGroundY - totalH;
-        const grad = ctx.createLinearGradient(b.x, y, b.x, baseGroundY);
+        const grad = ctx.createLinearGradient(b.x * sx, y, b.x * sx, baseGroundY);
         grad.addColorStop(0, `hsl(${b.tone},40%,40%)`);
         grad.addColorStop(1, `hsl(${b.tone},40%,20%)`);
         ctx.fillStyle = grad;
-        ctx.fillRect(b.x, y, b.width, totalH);
+        ctx.fillRect(b.x * sx, y, b.width * sx, totalH);
         for (let f = 0; f < full; f++) {
           for (let w = 0; w < 3; w++) {
             ctx.fillStyle = `rgba(255,220,140,${0.7 + Math.sin(time * 0.003 + f) * 0.2})`;
-            ctx.fillRect(b.x + 7 + w * 14, baseGroundY - (f + 1) * floorH + 3, 7, 6);
+            ctx.fillRect(
+              (b.x + 7 + w * 14) * sx,
+              baseGroundY - (f + 1) * floorH + 3 * sy,
+              7 * sx,
+              6 * sy
+            );
           }
         }
         if (b.crane && progress > 0.2) {
           b.angle += b.angleSpeed;
-          const baseX = b.x + b.width / 2;
-          const baseY = y - 5;
+          const baseX = (b.x + b.width / 2) * sx;
+          const baseY = y - 5 * sy;
           ctx.fillStyle = "#999";
-          ctx.fillRect(baseX - 2, baseY, 4, 18);
-          const armX = baseX + Math.cos(b.angle) * 28;
-          const armY = baseY - 15 + Math.sin(b.angle) * 5;
+          ctx.fillRect(baseX - 2 * sx, baseY, 4 * sx, 18 * sy);
+          const armX = baseX + Math.cos(b.angle) * 28 * sx;
+          const armY = baseY - 15 * sy + Math.sin(b.angle) * 5 * sy;
           ctx.beginPath();
           ctx.moveTo(baseX, baseY);
           ctx.lineTo(armX, armY);
           ctx.strokeStyle = "#d2a45e";
-          ctx.lineWidth = 3;
+          ctx.lineWidth = 3 * Math.min(sx, sy);
           ctx.stroke();
         }
       });
     };
 
     const drawGround = () => {
+      const { x: sx, y: sy } = scaleRef.current;
       ctx.fillStyle = "#2a2418";
-      ctx.fillRect(0, BASE_H - 55, CANVAS_WIDTH, 55);
+      ctx.fillRect(0, (BASE_H - 55) * sy, width, 55 * sy);
       ctx.fillStyle = "#4a3a2a";
-      ctx.fillRect(0, BASE_H - 48, CANVAS_WIDTH, 6);
+      ctx.fillRect(0, (BASE_H - 48) * sy, width, 6 * sy);
     };
 
     const drawCake = (progress) => {
       const { tiers, cakeX, cakeY } = baseDataRef.current;
+      const { x: sx, y: sy } = scaleRef.current;
       const cakeProgress = Math.min(Math.max((progress - 0.15) / 0.85, 0), 1);
       let builtH = 0;
       tiers.forEach((t, i) => {
@@ -225,133 +246,147 @@ function App() {
         const tierEnd = tierStart + 0.25;
         let local = (cakeProgress - tierStart) / (tierEnd - tierStart);
         local = Math.min(Math.max(local, 0), 1);
-        const curH = t.h * local;
+        const curH = t.h * sy * local;
         if (curH <= 0) return;
-        const y = cakeY - builtH - curH;
-        const x = cakeX - t.w / 2;
+        const y = cakeY * sy - builtH - curH;
+        const x = cakeX * sx - (t.w * sx) / 2;
         const grad = ctx.createLinearGradient(x, y, x, y + curH);
         grad.addColorStop(0, t.c);
         grad.addColorStop(1, "#de7ca3");
         ctx.fillStyle = grad;
-        ctx.fillRect(x, y, t.w, curH);
+        ctx.fillRect(x, y, t.w * sx, curH);
         ctx.fillStyle = t.i;
-        ctx.fillRect(x - 2, y - 5, t.w + 4, 7);
+        ctx.fillRect(x - 2 * sx, y - 5 * sy, (t.w + 4) * sx, 7 * sy);
         builtH += curH;
       });
       if (progress >= 1) {
-        const top = cakeY - 162;
+        const top = cakeY * sy - 162 * sy;
         ctx.fillStyle = "#fff";
-        ctx.fillRect(cakeX - 4, top - 30, 8, 28);
+        ctx.fillRect(cakeX * sx - 4 * sx, top - 30 * sy, 8 * sx, 28 * sy);
         ctx.fillStyle = "#aa7733";
-        ctx.fillRect(cakeX - 1, top - 34, 2, 8);
+        ctx.fillRect(cakeX * sx - 1 * sx, top - 34 * sy, 2 * sx, 8 * sy);
         ctx.beginPath();
-        ctx.moveTo(cakeX, top - 42);
-        ctx.lineTo(cakeX - 5, top - 36);
-        ctx.lineTo(cakeX + 5, top - 36);
+        ctx.moveTo(cakeX * sx, top - 42 * sy);
+        ctx.lineTo(cakeX * sx - 5 * sx, top - 36 * sy);
+        ctx.lineTo(cakeX * sx + 5 * sx, top - 36 * sy);
         ctx.fillStyle = "#ffaa33";
         ctx.fill();
         ctx.beginPath();
-        ctx.arc(cakeX, top - 38, 6, 0, Math.PI * 2);
+        ctx.arc(cakeX * sx, top - 38 * sy, 6 * Math.min(sx, sy), 0, Math.PI * 2);
         ctx.fillStyle = "#ff6600";
         ctx.fill();
       }
     };
 
+    // Worker drawing – stops moving when cakeComplete, and shows "Happy Birthday" text above
     const drawWorker = (worker, time, isComplete) => {
+      const { x: sx, y: sy } = scaleRef.current;
+      // update position only if cake not complete
       if (!isComplete) {
         worker.x += worker.speed * worker.dir;
         if (worker.x > 950) worker.dir = -1;
         if (worker.x < 150) worker.dir = 1;
+        // update leg/arm phases only when moving
         worker.legPhase += 0.03;
         worker.armPhase += 0.035;
       }
       const legOffset = Math.sin(time * 0.006 + worker.legPhase) * 0.6;
       const armOffset = Math.sin(time * 0.007 + worker.armPhase) * 0.8;
       
-      const xPos = worker.x;
-      const yPos = BASE_H - 80;
+      const xPos = worker.x * sx;
+      const yPos = (BASE_H - 80) * sy;
       
+      // Helmet
       ctx.fillStyle = "#ff9900";
       ctx.beginPath();
-      ctx.ellipse(xPos + 8, yPos - 12, 8, 6, 0, 0, Math.PI * 2);
+      ctx.ellipse(xPos + 8 * sx, yPos - 12 * sy, 8 * sx, 6 * sy, 0, 0, Math.PI * 2);
       ctx.fill();
+      // Head
       ctx.fillStyle = "#f5cba0";
       ctx.beginPath();
-      ctx.arc(xPos + 8, yPos - 6, 6, 0, Math.PI * 2);
+      ctx.arc(xPos + 8 * sx, yPos - 6 * sy, 6 * sx, 0, Math.PI * 2);
       ctx.fill();
+      // Body
       ctx.fillStyle = "#3366cc";
-      ctx.fillRect(xPos + 3, yPos - 2, 10, 12);
+      ctx.fillRect(xPos + 3 * sx, yPos - 2 * sy, 10 * sx, 12 * sy);
+      // Legs
       ctx.fillStyle = "#2255aa";
-      const leftLegX = xPos + 3 + legOffset * 2;
-      const rightLegX = xPos + 9 - legOffset * 2;
-      ctx.fillRect(leftLegX, yPos + 8, 4, 8);
-      ctx.fillRect(rightLegX, yPos + 8, 4, 8);
+      const leftLegX = xPos + 3 * sx + legOffset * 2 * sx;
+      const rightLegX = xPos + 9 * sx - legOffset * 2 * sx;
+      ctx.fillRect(leftLegX, yPos + 8 * sy, 4 * sx, 8 * sy);
+      ctx.fillRect(rightLegX, yPos + 8 * sy, 4 * sx, 8 * sy);
+      // Arms
       ctx.beginPath();
-      ctx.moveTo(xPos + 13, yPos);
-      ctx.lineTo(xPos + 18 + armOffset * 5, yPos + 5 + Math.abs(armOffset) * 3);
-      ctx.lineWidth = 3;
+      ctx.moveTo(xPos + 13 * sx, yPos);
+      ctx.lineTo(xPos + 18 * sx + armOffset * 5 * sx, yPos + 5 * sy + Math.abs(armOffset) * 3 * sy);
+      ctx.lineWidth = 3 * sx;
       ctx.strokeStyle = "#3366cc";
       ctx.stroke();
       ctx.beginPath();
-      ctx.moveTo(xPos + 3, yPos);
-      ctx.lineTo(xPos - 2 - armOffset * 5, yPos + 5 + Math.abs(armOffset) * 3);
+      ctx.moveTo(xPos + 3 * sx, yPos);
+      ctx.lineTo(xPos - 2 * sx - armOffset * 5 * sx, yPos + 5 * sy + Math.abs(armOffset) * 3 * sy);
       ctx.stroke();
 
+      // If cake complete, show "Happy Birthday" text above worker
       if (isComplete) {
-        ctx.font = `bold 14px 'Segoe UI', 'Dancing Script', cursive`;
+        ctx.font = `bold ${14 * Math.min(sx, sy)}px 'Segoe UI', 'Dancing Script', cursive`;
         ctx.fillStyle = "#ffdd99";
         ctx.shadowBlur = 4;
         ctx.textAlign = "center";
-        ctx.fillText("🎂 Happy Birthday 🎂", xPos + 8, yPos - 22);
+        ctx.fillText("🎂 Happy Birthday 🎂", xPos + 8 * sx, yPos - 22 * sy);
         ctx.textAlign = "left";
         ctx.shadowBlur = 0;
       }
     };
 
     const drawCementMixer = (time) => {
-      const mx = 850, my = BASE_H - 75;
+      const { x: sx, y: sy } = scaleRef.current;
+      const mx = 850 * sx;
+      const my = (BASE_H - 75) * sy;
       ctx.fillStyle = "#888";
-      ctx.fillRect(mx, my, 50, 20);
+      ctx.fillRect(mx, my, 50 * sx, 20 * sy);
       ctx.fillStyle = "#555";
-      ctx.fillRect(mx + 10, my - 15, 30, 15);
+      ctx.fillRect(mx + 10 * sx, my - 15 * sy, 30 * sx, 15 * sy);
       const angle = time * 0.005;
       ctx.save();
-      ctx.translate(mx + 25, my - 8);
+      ctx.translate(mx + 25 * sx, my - 8 * sy);
       ctx.rotate(angle);
       ctx.fillStyle = "#cc8844";
       ctx.beginPath();
-      ctx.ellipse(0, 0, 15, 10, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, 0, 15 * sx, 10 * sy, 0, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = "#aa6633";
-      ctx.fillRect(-12, -6, 24, 12);
+      ctx.fillRect(-12 * sx, -6 * sy, 24 * sx, 12 * sy);
       ctx.restore();
       ctx.fillStyle = "#222";
       ctx.beginPath();
-      ctx.arc(mx + 10, my + 18, 6, 0, Math.PI * 2);
+      ctx.arc(mx + 10 * sx, my + 18 * sy, 6 * sx, 0, Math.PI * 2);
       ctx.fill();
       ctx.beginPath();
-      ctx.arc(mx + 40, my + 18, 6, 0, Math.PI * 2);
+      ctx.arc(mx + 40 * sx, my + 18 * sy, 6 * sx, 0, Math.PI * 2);
       ctx.fill();
     };
 
     const drawWarningLight = (time) => {
+      const { x: sx, y: sy } = scaleRef.current;
       const flash = Math.sin(time * 0.01) > 0;
       ctx.fillStyle = flash ? "#ff0000" : "#ff8888";
       ctx.beginPath();
-      ctx.arc(100, BASE_H - 100, 8, 0, Math.PI * 2);
+      ctx.arc(100 * sx, (BASE_H - 100) * sy, 8 * sx, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = "#ffff00";
-      ctx.font = `bold 12px monospace`;
-      ctx.fillText("⚠️", 92, BASE_H - 95);
+      ctx.font = `bold ${12 * Math.min(sx, sy)}px monospace`;
+      ctx.fillText("⚠️", 92 * sx, (BASE_H - 95) * sy);
     };
 
     const drawBlueprint = () => {
-      const bx = 180, by = BASE_H - 35;
+      const { x: sx, y: sy } = scaleRef.current;
+      const bx = 180 * sx, by = (BASE_H - 35) * sy;
       ctx.fillStyle = "#cfe7ff";
-      ctx.fillRect(bx, by, 45, 18);
+      ctx.fillRect(bx, by, 45 * sx, 18 * sy);
       ctx.fillStyle = "#2266aa";
-      ctx.font = `bold 8px monospace`;
-      ctx.fillText("📐 PLAN", bx + 5, by + 12);
+      ctx.font = `bold ${8 * Math.min(sx, sy)}px monospace`;
+      ctx.fillText("📐 PLAN", bx + 5 * sx, by + 12 * sy);
     };
 
     const handleCanvasClick = (e) => {
@@ -361,25 +396,18 @@ function App() {
       const scaleY = canvas.height / rect.height;
       const mouseX = (e.clientX - rect.left) * scaleX;
       const mouseY = (e.clientY - rect.top) * scaleY;
-      
-      const { cakeX, cakeY, tiers } = baseDataRef.current;
-      const maxTierWidth = Math.max(...tiers.map(t => t.w));
-      const totalCakeHeight = tiers.reduce((sum, t) => sum + t.h, 0);
-      
-      const cakeLeft = cakeX - maxTierWidth / 2;
-      const cakeRight = cakeX + maxTierWidth / 2;
-      const cakeTop = cakeY - totalCakeHeight;
-      const cakeBottom = cakeY;
-      
+      const { cakeX, cakeY } = baseDataRef.current;
+      const { x: sx, y: sy } = scaleRef.current;
+      const cakeLeft = (cakeX - 85) * sx;
+      const cakeRight = (cakeX + 85) * sx;
+      const cakeTop = (cakeY - 170) * sy;
+      const cakeBottom = cakeY * sy;
       if (mouseX > cakeLeft && mouseX < cakeRight && mouseY > cakeTop && mouseY < cakeBottom) {
-        setTimeout(() => {
-          window.open('cake-interactive.html', '_blank');
-        }, 50);
+        window.open('cake-interactive.html', '_blank');
       }
     };
     canvas.addEventListener('click', handleCanvasClick);
 
-    let animationId;
     function animate(now) {
       const elapsed = now - startTimeRef.current;
       const progress = Math.min(elapsed / BUILD_DURATION, 1);
@@ -396,36 +424,23 @@ function App() {
       drawCake(progress);
       drawSnow(now);
 
+      // Draw extra elements (workers etc.)
       if (animationStarted) {
+        // Pass cakeComplete flag to workers – they will stop moving and show text
         workersRef.current.forEach(worker => drawWorker(worker, now, cakeComplete));
         drawCementMixer(now);
         drawWarningLight(now);
         drawBlueprint();
       }
 
-      // Debug red rectangle around cake when complete
-      if (cakeComplete) {
-        const { cakeX, cakeY, tiers } = baseDataRef.current;
-        const maxTierWidth = Math.max(...tiers.map(t => t.w));
-        const totalCakeHeight = tiers.reduce((sum, t) => sum + t.h, 0);
-        const left = cakeX - maxTierWidth/2;
-        const right = cakeX + maxTierWidth/2;
-        const top = cakeY - totalCakeHeight;
-        const bottom = cakeY;
-        ctx.save();
-        ctx.globalAlpha = 0.2;
-        ctx.fillStyle = "#ff0000";
-        ctx.fillRect(left, top, right - left, bottom - top);
-        ctx.restore();
-        ctx.strokeStyle = "#ff0000";
-        ctx.lineWidth = 2;
-        ctx.strokeRect(left, top, right - left, bottom - top);
-      }
-
       if (progress < 1) {
-        ctx.font = `bold 14px monospace`;
+        ctx.font = `bold ${14 * Math.min(scaleRef.current.x, scaleRef.current.y)}px monospace`;
         ctx.fillStyle = "#aaffdd";
-        ctx.fillText(`🏗️ constructing ${Math.floor(progress * 100)}%`, CANVAS_WIDTH - 180, CANVAS_HEIGHT - 20);
+        ctx.fillText(`🏗️ constructing ${Math.floor(progress * 100)}%`, width - 180 * scaleRef.current.x, height - 20 * scaleRef.current.y);
+      } else {
+        ctx.font = `italic ${16 * Math.min(scaleRef.current.x, scaleRef.current.y)}px 'Segoe UI'`;
+        ctx.fillStyle = "#ffdd99";
+        ctx.shadowBlur = 6;
       }
       animationId = requestAnimationFrame(animate);
     }
@@ -434,6 +449,7 @@ function App() {
     return () => {
       cancelAnimationFrame(animationId);
       canvas.removeEventListener('click', handleCanvasClick);
+      window.removeEventListener('resize', handleResize);
       initializedRef.current = false;
     };
   }, [animationStarted, cakeComplete]);
@@ -442,177 +458,48 @@ function App() {
     setAnimationStarted(true);
     const textDiv = document.getElementById('text');
     if (textDiv) textDiv.style.opacity = '1';
+    // audio with 2s delay
     setTimeout(() => {
       audioRef.current?.play().catch(() => {});
     }, 0);
   };
 
-  // Inline styles to ensure everything is visible
-  const styles = {
-    container: {
-      background: 'radial-gradient(circle at 30% 10%, #010118, #000000)',
-      minHeight: '100vh',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      fontFamily: "'Segoe UI', 'Inter', sans-serif",
-      position: 'relative'
-    },
-    wrap: {
-      position: 'relative',
-      width: CANVAS_WIDTH,
-      height: CANVAS_HEIGHT,
-      borderRadius: '32px',
-      boxShadow: '0 0 40px rgba(0,255,255,0.2)',
-      margin: '20px auto'
-    },
-    textContainer: {
-      position: 'absolute',
-      left: '50%',
-      top: '20px',
-      transform: 'translateX(-50%)',
-      background: 'transparent',
-      padding: '12px 20px',
-      zIndex: 20,
-      textAlign: 'center',
-      pointerEvents: 'none',
-      opacity: 0,
-      transition: 'opacity 0.8s ease'
-    },
-    codeDiv: {
-      color: '#fff5e6',
-      fontSize: '1.35rem',
-      textShadow: '0 0 12px #ff66aa',
-      fontFamily: "'Dancing Script', 'Pacifico', cursive"
-    },
-    clockBox: {
-      position: 'absolute',
-      bottom: '60px',
-      right: '20px',
-      background: 'rgba(0,0,0,0.7)',
-      backdropFilter: 'blur(12px)',
-      padding: '8px 22px',
-      borderRadius: '60px',
-      fontFamily: 'monospace',
-      fontSize: '0.95rem',
-      border: '1px solid cyan',
-      color: 'cyan'
-    },
-    canvas: {
-      display: 'block',
-      width: CANVAS_WIDTH,
-      height: CANVAS_HEIGHT,
-      borderRadius: '28px',
-      cursor: 'pointer'
-    },
-    cakeHint: {
-      position: 'absolute',
-      bottom: '20px',
-      left: '50%',
-      transform: 'translateX(-50%)',
-      background: 'rgba(0,0,0,0.7)',
-      backdropFilter: 'blur(8px)',
-      padding: '8px 20px',
-      borderRadius: '60px',
-      zIndex: 25,
-      fontSize: '1rem',
-      fontWeight: 'bold',
-      color: '#ffdd99',
-      border: '1px solid #ffaa66',
-      pointerEvents: 'none',
-      whiteSpace: 'nowrap',
-      fontFamily: "'Dancing Script', cursive"
-    },
-    modalOverlay: {
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-      background: 'rgba(0,0,0,0.92)',
-      backdropFilter: 'blur(14px)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000
-    },
-    modalCard: {
-      background: 'linear-gradient(145deg, #1e1a2f, #0a0718)',
-      borderRadius: '70px',
-      padding: '50px 60px',
-      textAlign: 'center',
-      border: '2px solid #ff88aa',
-      boxShadow: '0 0 80px rgba(255,100,150,0.5)',
-      cursor: 'pointer',
-      animation: 'gentlePulse 2.2s infinite alternate'
-    },
-    modalText: {
-      fontSize: '1.3rem',
-      color: '#ffe0e7',
-      margin: '20px 0'
-    },
-    modalSubText: {
-      fontSize: '1rem',
-      color: '#ffccdd',
-      marginBottom: '20px'
-    },
-    modalClickHint: {
-      fontSize: '0.9rem',
-      color: '#ffaacc',
-      marginTop: '10px'
-    }
-  };
-
-  // Inject keyframes for modal animation
-  useEffect(() => {
-    const styleSheet = document.createElement("style");
-    styleSheet.textContent = `
-      @keyframes gentlePulse {
-        0% { transform: scale(1); box-shadow: 0 0 40px rgba(255,100,150,0.3); }
-        100% { transform: scale(1.01); box-shadow: 0 0 90px rgba(255,100,150,0.7); }
-      }
-      .cake-hint::before { content: "🎂 "; font-size: 1.3rem; }
-      .cake-hint::after { content: " ✨"; }
-      #code .say { display: inline-block; margin: 0 6px 4px 0; }
-      #code .say::after { content: " ✦ "; color: #ffbbee; }
-      #code .say:last-child::after { content: ""; }
-    `;
-    document.head.appendChild(styleSheet);
-    return () => document.head.removeChild(styleSheet);
-  }, []);
-
   return (
-    <div style={styles.container}>
-      <div style={styles.wrap}>
-        <div id="text" style={styles.textContainer}>
-          <div id="code" style={styles.codeDiv}></div>
-        </div>
-        <div id="clock-box" style={styles.clockBox}>
-          <span id="clock">🎂✨ Creating your world ✨🎂</span>
-        </div>
-        <canvas ref={canvasRef} style={styles.canvas}></canvas>
-        <div className="cake-hint" style={styles.cakeHint}>
-          💖 Click The Cake With Your Own Risk 💖
-        </div>
-      </div>
+  <div className="wrap">
+    <div id="text">
+      <div id="code"></div>
+    </div>
 
-      <audio ref={audioRef} src="/aud.mp3" preload="auto" />
+    <div id="clock-box">
+      <span id="clock">🎂✨ Creating your world ✨🎂</span>
+    </div>
 
-      {!animationStarted && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modalCard} onClick={startExperience}>
-            <p style={styles.modalText}>✨💌 OPEN THE BOX, DEAR 💌✨</p>
-            <p style={styles.modalSubText}>
-              Sending love from my cyber heart to your civil soul 🏗️✨
-            </p>
-            <div style={styles.modalClickHint}>
-              💫👉 Touch here and unlock magic 👈💫
-            </div>
+    <canvas ref={canvasRef}></canvas>
+
+    <div className="cake-hint">
+      💖 Click The Cake With Your Own Risk 💖
+    </div>
+
+    {!animationStarted && (
+      <div className="start-modal">
+        <div className="start-card" onClick={startExperience}>
+          <p className="main-line">✨💌 OPEN THE BOX, DEAR 💌✨</p>
+
+          <p className="sub-line">
+            Sending love from my cyber heart   
+            to your civil soul 🏗️✨
+          </p>
+
+          <div className="click-hint">
+            💫👉 Touch here and unlock magic 👈💫
           </div>
         </div>
-      )}
-    </div>
-  );
+      </div>
+    )}
+
+    <audio ref={audioRef} src="/aud.mp3" preload="auto" />
+  </div>
+);
 }
 
 export default App;
