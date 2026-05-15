@@ -389,6 +389,7 @@ function App() {
       ctx.fillText("📐 PLAN", bx + 5 * sx, by + 12 * sy);
     };
 
+    // FIXED: Handle canvas click with dynamic cake dimensions (works on both mobile and PC)
     const handleCanvasClick = (e) => {
       if (!cakeComplete) return;
       const rect = canvas.getBoundingClientRect();
@@ -396,14 +397,24 @@ function App() {
       const scaleY = canvas.height / rect.height;
       const mouseX = (e.clientX - rect.left) * scaleX;
       const mouseY = (e.clientY - rect.top) * scaleY;
-      const { cakeX, cakeY } = baseDataRef.current;
+      
+      const { cakeX, cakeY, tiers } = baseDataRef.current;
       const { x: sx, y: sy } = scaleRef.current;
-      const cakeLeft = (cakeX - 85) * sx;
-      const cakeRight = (cakeX + 85) * sx;
-      const cakeTop = (cakeY - 170) * sy;
+      
+      // Dynamically compute cake bounding box (matching the drawing logic)
+      const maxTierWidth = Math.max(...tiers.map(t => t.w));
+      const totalCakeHeight = tiers.reduce((sum, t) => sum + t.h, 0);
+      
+      const cakeLeft = (cakeX - maxTierWidth / 2) * sx;
+      const cakeRight = (cakeX + maxTierWidth / 2) * sx;
+      const cakeTop = cakeY * sy - (totalCakeHeight * sy);
       const cakeBottom = cakeY * sy;
+      
       if (mouseX > cakeLeft && mouseX < cakeRight && mouseY > cakeTop && mouseY < cakeBottom) {
-        window.open('cake-interactive.html', '_blank');
+        // Small delay to help with popup blockers on desktop
+        setTimeout(() => {
+          window.open('cake-interactive.html', '_blank');
+        }, 50);
       }
     };
     canvas.addEventListener('click', handleCanvasClick);
@@ -426,7 +437,6 @@ function App() {
 
       // Draw extra elements (workers etc.)
       if (animationStarted) {
-        // Pass cakeComplete flag to workers – they will stop moving and show text
         workersRef.current.forEach(worker => drawWorker(worker, now, cakeComplete));
         drawCementMixer(now);
         drawWarningLight(now);
